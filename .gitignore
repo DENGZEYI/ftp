@@ -1,0 +1,7 @@
+#exercise C file
+test/
+*.o
+# executable
+client/ftclient
+server/ftserve
+common/common
