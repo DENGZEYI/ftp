@@ -101,30 +101,25 @@ int ftserve_list(int sock_data, int sock_control)
 	size_t num_read;									
 	FILE* fd;
 
-	int rs = system("ls -l | tail -n +2 > tmp.txt");
-	if ( rs < 0) {
+	int old_IO_OUT=0;
+
+	dup2(STDOUT_FILENO,old_IO_OUT);
+
+	if(dup2(sock_data,STDOUT_FILENO)==-1){
 		exit(1);
 	}
-	
-	fd = fopen("tmp.txt", "r");	
-	if (!fd) {
+
+	//start sending the information of LIST command to client
+	//whether use 220 or other as code is specified by the rfc file.
+	//I'm not sure whether 220 is correct.
+	send_response(sock_control, 220); 
+
+	if(system("ls -l | tail -n +2 ")<0){
 		exit(1);
 	}
 
-	/* Seek to the beginning of the file */
-	fseek(fd, 0, SEEK_SET);
-
-	send_response(sock_control, 1); //starting
-
-	memset(data, 0, MAXSIZE);
-	while ((num_read = fread(data, 1, MAXSIZE, fd)) > 0) {
-		if (send(sock_data, data, num_read, 0) < 0) {
-			perror("err");
-		}
-		memset(data, 0, MAXSIZE);
-	}
-
-	fclose(fd);
+	dup2(old_IO_OUT,STDOUT_FILENO);
+	printf("set stdout_fileno");
 
 	send_response(sock_control, 226);	// send 226
 

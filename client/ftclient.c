@@ -155,12 +155,12 @@ int ftclient_list(int sock_data, int sock_con)
 	
 	memset(buf, 0, sizeof(buf));
 	while ((num_recvd = recv(sock_data, buf, MAXSIZE, 0)) > 0) {
-        	printf("%s", buf);
+        printf("%s", buf);
 		memset(buf, 0, sizeof(buf));
 	}
 	
 	if (num_recvd < 0) {
-	        perror("error");
+	    perror("error");
 	}
 
 	// Wait for server done message
