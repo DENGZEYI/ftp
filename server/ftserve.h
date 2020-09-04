@@ -34,8 +34,12 @@ void ftserve_retr(int sock_control, int sock_data, char* filename);
  */
 int ftserve_list(int sock_data, int sock_control);
 
-
-
+/**
+ * Chang the working directory to the speicifed path
+ * 
+ * Ceturn -1 on error, 0 on success 
+ */
+int ftserve_chdir(int sock_control,int sock_data, char* filepath);
 
 /**
  * Open data connection to client 

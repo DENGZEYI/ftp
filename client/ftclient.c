@@ -69,6 +69,9 @@ int ftclient_read_command(char* buf, int size, struct command *cstruct)
 	if (strcmp(buf, "list") == 0) {
 		strcpy(cstruct->code, "LIST");		
 	}
+	else if (strcmp(buf,"cwdd")==0) {
+		strcpy(cstruct->code,"CWDD");
+	}
 	else if (strcmp(buf, "get") == 0) {
 		strcpy(cstruct->code, "RETR");		
 	}
@@ -153,6 +156,40 @@ int ftclient_list(int sock_data, int sock_con)
 		return -1;
 	}
 	
+	printf("start recevieing data on sock_data\n");
+	memset(buf, 0, sizeof(buf));
+	while ((num_recvd = recv(sock_data, buf, MAXSIZE, 0)) > 0) {
+        printf("%s", buf);
+		memset(buf, 0, sizeof(buf));
+	}
+	printf("get out of recv func\n");
+	if (num_recvd < 0) {
+		printf("erro");
+	    perror("error");
+	}
+	// Wait for server done message
+	if (recv(sock_con, &tmp, sizeof tmp, 0) < 0) {
+		perror("client: error reading message from server\n");
+		return -1;
+	}
+	return 0;
+}
+
+/**
+ * Do CWDD command
+*/
+int ftclient_cwd(int sock_data,int sock_con,char* arg)
+{
+	size_t num_recvd;			// number of bytes received with recv()
+	char buf[MAXSIZE];			// hold a filename received from server
+	int tmp = 0;
+
+	// Wait for server starting message
+	if (recv(sock_con, &tmp, sizeof tmp, 0) < 0) {
+		perror("client: error reading message from server\n");
+		return -1;
+	}
+	
 	memset(buf, 0, sizeof(buf));
 	while ((num_recvd = recv(sock_data, buf, MAXSIZE, 0)) > 0) {
         printf("%s", buf);
@@ -170,8 +207,6 @@ int ftclient_list(int sock_data, int sock_con)
 	}
 	return 0;
 }
-
-
 
 /**
  * Input: cmd struct with an a code and an arg
@@ -337,6 +372,9 @@ int main(int argc, char* argv[])
 			// execute command
 			if (strcmp(cmd.code, "LIST") == 0) {
 				ftclient_list(data_sock, sock_control);
+			}
+			else if (strcmp(cmd.code,"CWDD")==0){
+				ftclient_cwd(data_sock,sock_control,cmd.arg);
 			} 
 			else if (strcmp(cmd.code, "RETR") == 0) {
 				// wait for reply (is file valid)

@@ -58,12 +58,19 @@ int ftclient_open_conn(int sock_con);
  */
 int ftclient_list(int sock_data, int sock_con);
 
+/**
+ * Do CWDD command
+*/
+int ftclient_cwd(int sock_data,int sock_con,char* arg);
+
 
 /**
  * Input: cmd struct with an a code and an arg
  * Concats code + arg into a string and sends to server
  */
 int ftclient_send_cmd(struct command *cmd);
+
+
 
 
 /**

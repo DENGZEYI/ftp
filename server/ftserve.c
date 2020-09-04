@@ -97,13 +97,9 @@ void ftserve_retr(int sock_control, int sock_data, char* filename)
  */
 int ftserve_list(int sock_data, int sock_control)
 {
-	char data[MAXSIZE];
-	size_t num_read;									
-	FILE* fd;
-
-	int old_IO_OUT=0;
-
-	dup2(STDOUT_FILENO,old_IO_OUT);
+	//save the stdout_fileout to old_io_out
+	//int old_IO_OUT=0;
+	//dup2(STDOUT_FILENO,old_IO_OUT);
 
 	if(dup2(sock_data,STDOUT_FILENO)==-1){
 		exit(1);
@@ -118,15 +114,39 @@ int ftserve_list(int sock_data, int sock_control)
 		exit(1);
 	}
 
-	dup2(old_IO_OUT,STDOUT_FILENO);
-	printf("set stdout_fileno");
+	//recover stdout_fileno from old_io_out
+	//dup2(old_IO_OUT,STDOUT_FILENO);
+	//close(old_IO_OUT);
 
-	send_response(sock_control, 226);	// send 226
+	//send serve done message
+	send_response(sock_control, 226);	
 
 	return 0;	
 }
 
 
+
+/**
+ * Chang the working directory to the speicifed path
+ * 
+ * Ceturn -1 on error, 0 on success 
+ */
+int ftserve_chdir(int sock_control,int sock_data, char* filepath)
+{	
+	chdir(filepath);
+	char buf[MAXSIZE];
+	getcwd(buf,sizeof buf);
+
+	//tell client that server is ready over control connection
+	send_response(sock_control,220);
+	//send the current working directory on data socket
+	send(sock_data,buf,sizeof buf,0);
+	//send a "\n" to the client in order to make a new line
+	send(sock_data,"\n",1,0);
+	//send serve done message
+	send_response(sock_control, 226);
+	return 0;	
+}
 
 
 
@@ -288,7 +308,7 @@ int ftserve_recv_cmd(int sock_control, char*cmd, char*arg)
 	if (strcmp(cmd, "QUIT")==0) {
 		rc = 221;
 	} else if((strcmp(cmd, "USER")==0) || (strcmp(cmd, "PASS")==0) ||
-			(strcmp(cmd, "LIST")==0) || (strcmp(cmd, "RETR")==0)) {
+			(strcmp(cmd, "LIST")==0) || (strcmp(cmd, "RETR")==0)||(strcmp(cmd, "CWDD")==0)) {
 		rc = 200;
 	} else { //invalid command
 		rc = 502;
@@ -344,7 +364,10 @@ void ftserve_process(int sock_control)
 			} else if (strcmp(cmd, "RETR")==0) { // Do get <filename>
 				ftserve_retr(sock_control, sock_data, arg);
 			}
-		
+			else if(strcmp(cmd,"CWDD")==0){
+				ftserve_chdir(sock_control,sock_data,arg);
+			}
+			shutdown(sock_data,SHUT_RDWR);
 			// Close data connection
 			close(sock_data);
 		} 
