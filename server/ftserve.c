@@ -97,13 +97,13 @@ void ftserve_retr(int sock_control, int sock_data, char* filename)
  */
 int ftserve_list(int sock_data, int sock_control)
 {
-	//save the stdout_fileout to old_io_out
-	//int old_IO_OUT=0;
-	//dup2(STDOUT_FILENO,old_IO_OUT);
-
+	//创建STDOUT_FILENO的备份
+	int oldstdout;
+	oldstdout=dup(STDOUT_FILENO);
 	if(dup2(sock_data,STDOUT_FILENO)==-1){
 		exit(1);
 	}
+	close(sock_data);
 
 	//start sending the information of LIST command to client
 	//whether use 220 or other as code is specified by the rfc file.
@@ -114,13 +114,12 @@ int ftserve_list(int sock_data, int sock_control)
 		exit(1);
 	}
 
-	//recover stdout_fileno from old_io_out
-	//dup2(old_IO_OUT,STDOUT_FILENO);
-	//close(old_IO_OUT);
+	//还原STDOUT_FILENO
+	dup2(oldstdout,STDOUT_FILENO);
+	close(oldstdout);
 
 	//send serve done message
 	send_response(sock_control, 226);	
-
 	return 0;	
 }
 
@@ -367,7 +366,8 @@ void ftserve_process(int sock_control)
 			else if(strcmp(cmd,"CWDD")==0){
 				ftserve_chdir(sock_control,sock_data,arg);
 			}
-			shutdown(sock_data,SHUT_RDWR);
+			//TODO:I dont know why this work, figure it out later.
+			//shutdown(sock_data,SHUT_RDWR);
 			// Close data connection
 			close(sock_data);
 		} 

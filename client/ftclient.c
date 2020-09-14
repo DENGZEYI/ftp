@@ -69,7 +69,7 @@ int ftclient_read_command(char* buf, int size, struct command *cstruct)
 	if (strcmp(buf, "list") == 0) {
 		strcpy(cstruct->code, "LIST");		
 	}
-	else if (strcmp(buf,"cwdd")==0) {
+	else if (strcmp(buf,"cwd")==0) {
 		strcpy(cstruct->code,"CWDD");
 	}
 	else if (strcmp(buf, "get") == 0) {
