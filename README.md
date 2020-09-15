@@ -1,5 +1,10 @@
 FTP Client-Server Implementation
 ===========
+### differences from origine repository:
+a fork from github, adding some functions.
+### character: 
+for every coming client, fork() a new process to handle it.
+***
 Simple implementation of a file transfer program. It includes custom client and server programs that provide functionality to authenticate a user, list remote files, and retrieve remote files.
 
 ### Directory layout:
@@ -17,7 +22,7 @@ Simple implementation of a file transfer program. It includes custom client and 
 			makefile
 			.auth
 
-###Usage
+### Usage
 To compile and link ftserve:
 ```
 	$ cd server/
@@ -43,6 +48,7 @@ To run ftclient:
 		list
 		get <filename>
 		quit
+		cwd
 ```
 
 Available commands:
