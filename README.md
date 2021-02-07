@@ -1,7 +1,7 @@
 FTP Client-Server Implementation
 ===========
 ### differences from origine repository:
-a fork from github, adding some functions.
+adding some functions.
 ### character: 
 for every coming client, fork() a new process to handle it.
 ***
